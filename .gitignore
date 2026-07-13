@@ -1,0 +1,14 @@
+rag_system/vectordb/
+rag_system/embeddings/
+rag_system/logs/
+rag_system/cache/
+rag_system/.env
+rag_system/__pycache__/
+rag_system/src/**/__pycache__/
+rag_system/tests/__pycache__/
+rag_system/.pytest_cache/
+rag_system/data/processed/
+**/.DS_Store
+*.pyc
+__pycache__/
+.env

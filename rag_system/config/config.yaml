@@ -1,0 +1,18 @@
+openrouter:
+  model: openai/gpt-5-mini
+  temperature: 0.2
+  max_tokens: 2000
+
+embedding:
+  model: BAAI/bge-small-en-v1.5
+
+retrieval:
+  top_k: 5
+  similarity_threshold: 0.70
+
+chunking:
+  chunk_size: 500
+  overlap: 100
+
+vectordb:
+  provider: chromadb

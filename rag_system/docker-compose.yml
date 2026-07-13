@@ -1,0 +1,15 @@
+version: "3.9"
+
+services:
+  rag-system:
+    build: .
+    container_name: universal-local-rag
+    volumes:
+      - ./data:/app/data
+      - ./vectordb:/app/vectordb
+      - ./embeddings:/app/embeddings
+      - ./logs:/app/logs
+      - ./.env:/app/.env
+    stdin_open: true
+    tty: true
+    command: python main.py

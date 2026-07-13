@@ -1,0 +1,23 @@
+[
+  {
+    "date": "2025-06-01",
+    "title": "Q2 Planning Meeting",
+    "attendees": ["Alice", "Bob", "Charlie"],
+    "notes": "Discussed Q2 goals including product launch in August. Marketing budget increased by 15%. New hire requisition approved for engineering team.",
+    "action_items": [
+      "Alice: Finalize product spec by June 15",
+      "Bob: Prepare marketing materials",
+      "Charlie: Start recruitment for senior developer"
+    ]
+  },
+  {
+    "date": "2025-06-10",
+    "title": "Sprint Retrospective",
+    "attendees": ["Alice", "Bob", "David"],
+    "notes": "Sprint 12 completed successfully. Team velocity increased by 20%. Identified need for better testing coverage. Agreed to add one hour for testing per sprint.",
+    "action_items": [
+      "David: Set up automated testing pipeline",
+      "Alice: Schedule testing workshop"
+    ]
+  }
+]
