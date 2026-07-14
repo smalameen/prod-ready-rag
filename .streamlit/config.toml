@@ -1,6 +1,8 @@
 [server]
-port = 8501
+port = 3001
 maxUploadSize = 50
+fileWatcherType = "none"
+headless = true
 
 [theme]
 primaryColor = "#FF4B4B"

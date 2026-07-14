@@ -12,3 +12,7 @@ rag_system/data/processed/
 *.pyc
 __pycache__/
 .env
+.agents/
+.claude/
+entrypoint.sh
+rag_system/ui/.streamlit/

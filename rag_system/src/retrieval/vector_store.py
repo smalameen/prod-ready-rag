@@ -6,7 +6,7 @@ import chromadb
 from chromadb.config import Settings
 
 from src.loaders.base import Document
-from src.utils.config import BASE_DIR
+from src.utils.config import DATA_DIR
 
 
 logger = logging.getLogger(__name__)
@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 class VectorStore:
     def __init__(self, collection_name: str = "rag_documents"):
-        self.persist_dir = str(BASE_DIR / "vectordb" / "chromadb")
+        self.persist_dir = str(DATA_DIR / "vectordb" / "chromadb")
         Path(self.persist_dir).mkdir(parents=True, exist_ok=True)
 
         self.client = chromadb.PersistentClient(

@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
+DATA_DIR = Path(os.getenv("DATA_DIR", str(BASE_DIR)))
 CONFIG_DIR = BASE_DIR / "config"
 CONFIG_PATH = CONFIG_DIR / "config.yaml"
 ENV_PATH = BASE_DIR / ".env"
