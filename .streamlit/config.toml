@@ -1,5 +1,4 @@
 [server]
-port = 3001
 maxUploadSize = 50
 fileWatcherType = "none"
 headless = true
