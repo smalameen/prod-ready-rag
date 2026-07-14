@@ -59,9 +59,9 @@ class VectorStore:
         top_k: int = 5,
         similarity_threshold: float = 0.75,
         metadata_filter: dict[str, Any] | None = None,
+        where: dict[str, Any] | None = None,
     ) -> list[dict[str, Any]]:
-        where = None
-        if metadata_filter:
+        if where is None and metadata_filter:
             where = {}
             for k, v in metadata_filter.items():
                 where[k] = {"$eq": str(v) if not isinstance(v, (str, int, float, bool)) else v}
@@ -92,6 +92,14 @@ class VectorStore:
         if ids:
             self.collection.delete(ids=ids)
             logger.info(f"Deleted {len(ids)} documents from vector store")
+
+    def delete_by_metadata(self, where: dict[str, Any]) -> int:
+        results = self.collection.get(where=where)
+        ids = results.get("ids", [])
+        if ids:
+            self.collection.delete(ids=ids)
+            logger.info(f"Deleted {len(ids)} documents matching {where}")
+        return len(ids)
 
     def count(self) -> int:
         return self.collection.count()

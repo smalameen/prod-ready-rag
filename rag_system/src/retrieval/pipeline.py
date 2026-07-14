@@ -28,6 +28,7 @@ class RetrievalPipeline:
         self,
         query: str,
         metadata_filter: dict[str, Any] | None = None,
+        where: dict[str, Any] | None = None,
         tracker: LatencyTracker | None = None,
     ) -> list[dict[str, Any]]:
         t0 = time.time()
@@ -41,6 +42,7 @@ class RetrievalPipeline:
             top_k=20,
             similarity_threshold=self.similarity_threshold,
             metadata_filter=metadata_filter,
+            where=where,
         )
         t2 = time.time()
         if tracker:
