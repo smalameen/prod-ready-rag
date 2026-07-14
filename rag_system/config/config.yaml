@@ -4,11 +4,12 @@ openrouter:
   max_tokens: 2000
 
 embedding:
-  model: BAAI/bge-small-en-v1.5
+  model: openai/text-embedding-3-small
+  provider: api  # "local" for SentenceTransformer, "api" for OpenRouter/OpenAI
 
 retrieval:
   top_k: 5
-  similarity_threshold: 0.70
+  similarity_threshold: 0.20
 
 chunking:
   chunk_size: 500
