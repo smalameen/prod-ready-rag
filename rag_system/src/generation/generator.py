@@ -1,7 +1,9 @@
+import json
 import logging
 import time
 from typing import Any
 
+import requests
 from langchain_openai import ChatOpenAI
 
 from src.utils.config import get_openrouter_api_key
@@ -27,6 +29,61 @@ Question:
 {question}
 
 Answer:"""
+
+
+class OllamaGenerator:
+    def __init__(self, config: dict[str, Any]):
+        ollama_config = config.get("ollama", {})
+        self.model = ollama_config.get("model", "llama3.2")
+        self.base_url = ollama_config.get("base_url", "http://localhost:11434")
+        self.temperature = ollama_config.get("temperature", 0.2)
+        self.max_tokens = ollama_config.get("max_tokens", 1500)
+        self.chat_url = f"{self.base_url.rstrip('/')}/api/chat"
+        logger.info(f"OllamaGenerator initialized with model: {self.model} at {self.base_url}")
+
+    def generate(
+        self,
+        question: str,
+        context_chunks: list[dict[str, Any]],
+        tracker: LatencyTracker | None = None,
+    ) -> str:
+        context_parts = []
+        source_names: set[str] = set()
+
+        for chunk in context_chunks:
+            text = chunk.get("text", "")
+            source = chunk.get("metadata", {}).get("source_file", "unknown")
+            source_names.add(source)
+            context_parts.append(f"[Source: {source}]\n{text}")
+
+        context = "\n\n---\n\n".join(context_parts)
+        prompt = PROMPT_TEMPLATE.format(context=context, question=question)
+
+        payload = {
+            "model": self.model,
+            "messages": [{"role": "user", "content": prompt}],
+            "options": {
+                "temperature": self.temperature,
+                "num_predict": self.max_tokens,
+            },
+            "stream": False,
+        }
+
+        t0 = time.time()
+        resp = requests.post(self.chat_url, json=payload, timeout=120)
+        t1 = time.time()
+
+        if tracker:
+            tracker.record("llm_generation", t1 - t0)
+
+        resp.raise_for_status()
+        data = resp.json()
+        answer = data["message"]["content"]
+
+        source_lines = "\n".join(f"{i+1}. {s}" for i, s in enumerate(sorted(source_names)))
+        answer += f"\n\nSources:\n{source_lines}"
+
+        return answer
 
 
 class AnswerGenerator:
@@ -93,3 +150,10 @@ class AnswerGenerator:
     @staticmethod
     def _estimate_cost(prompt_tokens: int, completion_tokens: int) -> float:
         return (prompt_tokens * 1.0 + completion_tokens * 2.0) / 1_000_000 * 0.15
+
+
+def create_generator(config: dict[str, Any]):
+    provider = config.get("llm_provider", "openrouter")
+    if provider == "ollama":
+        return OllamaGenerator(config)
+    return AnswerGenerator(config)

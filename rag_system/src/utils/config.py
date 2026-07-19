@@ -22,13 +22,22 @@ def load_config() -> dict[str, Any]:
     else:
         config = {}
 
+    provider = os.getenv("LLM_PROVIDER") or config.get("llm_provider", "openrouter")
+    config["llm_provider"] = provider
+
     openrouter = config.get("openrouter", {})
     openrouter.setdefault("model", os.getenv("OPENROUTER_MODEL", "openai/gpt-5-mini"))
     openrouter.setdefault("temperature", 0.2)
     openrouter.setdefault("max_tokens", 2000)
 
+    ollama = config.get("ollama", {})
+    ollama.setdefault("model", os.getenv("OLLAMA_MODEL", "llama3.2"))
+    ollama.setdefault("base_url", os.getenv("OLLAMA_BASE_URL", "http://localhost:11434"))
+    ollama.setdefault("temperature", 0.2)
+    ollama.setdefault("max_tokens", 1500)
+
     embedding = config.get("embedding", {})
-    embedding.setdefault("model", os.getenv("EMBEDDING_MODEL", "BAAI/bge-small-en-v1.5"))
+    embedding["model"] = os.getenv("EMBEDDING_MODEL") or embedding.get("model", "BAAI/bge-small-en-v1.5")
 
     retrieval = config.get("retrieval", {})
     retrieval.setdefault("top_k", int(os.getenv("TOP_K", "5")))
@@ -44,6 +53,7 @@ def load_config() -> dict[str, Any]:
     vectordb.setdefault("provider", os.getenv("VECTOR_DB", "chromadb"))
 
     config["openrouter"] = openrouter
+    config["ollama"] = ollama
     config["embedding"] = embedding
     config["retrieval"] = retrieval
     config["chunking"] = chunking

@@ -39,3 +39,6 @@ docker-ingest:
 
 docker-query:
 	docker compose run --rm rag-system python query.py
+
+api:
+	python api_run.py
