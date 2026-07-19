@@ -15,4 +15,4 @@ __pycache__/
 .agents/
 .claude/
 entrypoint.sh
-rag_system/ui/.streamlit/
+rag_system/Claude-README.md
