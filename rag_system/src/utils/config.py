@@ -27,6 +27,7 @@ def load_config() -> dict[str, Any]:
 
     openrouter = config.get("openrouter", {})
     openrouter.setdefault("model", os.getenv("OPENROUTER_MODEL", "openai/gpt-5-mini"))
+    openrouter.setdefault("base_url", os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1"))
     openrouter.setdefault("temperature", 0.2)
     openrouter.setdefault("max_tokens", 2000)
 

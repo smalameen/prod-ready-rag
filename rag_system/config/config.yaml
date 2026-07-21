@@ -1,19 +1,20 @@
 llm_provider: openrouter  # "openrouter" or "ollama"
 
 openrouter:
-  model: openai/gpt-5-mini
+  model: llama-3.1-8b-instant
+  base_url: https://api.groq.com/openai/v1
   temperature: 0.2
   max_tokens: 1500
 
 ollama:
-  model: llama3.2
+  model: phi3:mini
   base_url: http://localhost:11434
   temperature: 0.2
   max_tokens: 1500
 
 embedding:
   model: BAAI/bge-small-en-v1.5
-  provider: local
+  provider: local  # "local" for dev, "hf" for Railway deploy
 
 retrieval:
   top_k: 15
@@ -24,4 +25,4 @@ chunking:
   overlap: 100
 
 vectordb:
-  provider: chromadb
+  provider: supabase  # "chromadb" or "supabase"

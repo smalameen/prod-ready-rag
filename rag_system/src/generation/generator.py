@@ -12,7 +12,6 @@ from src.utils.logging import LatencyTracker, log_llm_call
 
 logger = logging.getLogger(__name__)
 
-OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 DEFAULT_SITE_URL = "https://github.com/rag-project"
 DEFAULT_SITE_NAME = "Universal Local RAG"
 
@@ -90,6 +89,7 @@ class AnswerGenerator:
     def __init__(self, config: dict[str, Any]):
         or_config = config.get("openrouter", {})
         self.model = or_config.get("model", "openai/gpt-5-mini")
+        self.base_url = or_config.get("base_url", "https://openrouter.ai/api/v1")
         self.temperature = or_config.get("temperature", 0.2)
         self.max_tokens = or_config.get("max_tokens", 2000)
         self.api_key = get_openrouter_api_key()
@@ -99,7 +99,7 @@ class AnswerGenerator:
             temperature=self.temperature,
             max_tokens=self.max_tokens,
             api_key=self.api_key,
-            base_url=OPENROUTER_BASE_URL,
+            base_url=self.base_url,
             default_headers={
                 "HTTP-Referer": DEFAULT_SITE_URL,
                 "X-Title": DEFAULT_SITE_NAME,

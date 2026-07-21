@@ -12,7 +12,9 @@ rag_system/data/processed/
 *.pyc
 __pycache__/
 .env
+.venv/
 .agents/
 .claude/
-entrypoint.sh
 rag_system/Claude-README.md
+.DS_Store
+.DS_Store

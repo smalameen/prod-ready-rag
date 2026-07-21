@@ -11,6 +11,7 @@ from typing import Any
 
 import uvicorn
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -24,7 +25,7 @@ from src.loaders.base import Document
 from src.loaders.factory import get_loader
 from src.memory.conversation import ConversationMemory
 from src.retrieval.pipeline import RetrievalPipeline
-from src.retrieval.vector_store import VectorStore
+from src.retrieval.vector_store import create_vector_store, VectorStore
 from src.utils.config import BASE_DIR, load_config
 from src.utils.logging import LatencyTracker, setup_logging
 
@@ -32,8 +33,8 @@ logger = logging.getLogger(__name__)
 
 config = load_config()
 embedder = get_embedding_model(config["embedding"]["model"])
-vs_en = VectorStore(collection_name="user_docs_en")
-vs_multi = VectorStore(collection_name="user_docs_multi")
+vs_en = create_vector_store(collection_name="user_docs_en", config=config)
+vs_multi = create_vector_store(collection_name="user_docs_multi", config=config)
 ret_en = RetrievalPipeline(vs_en, embedder, config)
 ret_multi = RetrievalPipeline(vs_multi, embedder, config)
 generator = create_generator(config)
@@ -47,6 +48,14 @@ VISIBLE_DEFAULTS = {"fifa_rule_book.pdf", "history-kfc.txt", "stripe-history.txt
 TTL_HOURS = int(os.getenv("TTL_HOURS", "24"))
 
 app = FastAPI(title="RAG Assistant API")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 def has_bengali(text: str) -> bool:

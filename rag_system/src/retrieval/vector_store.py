@@ -12,7 +12,19 @@ from src.utils.config import DATA_DIR
 logger = logging.getLogger(__name__)
 
 
-class VectorStore:
+def create_vector_store(collection_name: str, config: dict[str, Any] | None = None):
+    provider = "chromadb"
+    if config:
+        provider = config.get("vectordb", {}).get("provider", "chromadb")
+
+    if provider == "supabase":
+        from src.vectordb.supabase_store import SupabaseVectorStore
+        return SupabaseVectorStore(collection_name=collection_name)
+
+    return ChromaDBVectorStore(collection_name=collection_name)
+
+
+class ChromaDBVectorStore:
     def __init__(self, collection_name: str = "rag_documents"):
         self.persist_dir = str(DATA_DIR / "vectordb" / "chromadb")
         Path(self.persist_dir).mkdir(parents=True, exist_ok=True)
@@ -25,7 +37,7 @@ class VectorStore:
             name=collection_name,
             metadata={"hnsw:space": "cosine"},
         )
-        logger.info(f"Vector store initialized at {self.persist_dir}")
+        logger.info(f"ChromaDB vector store initialized at {self.persist_dir}")
 
     def add_documents(
         self,
@@ -103,3 +115,6 @@ class VectorStore:
 
     def count(self) -> int:
         return self.collection.count()
+
+
+VectorStore = ChromaDBVectorStore

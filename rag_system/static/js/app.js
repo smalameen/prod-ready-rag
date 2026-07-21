@@ -165,7 +165,7 @@
 
   // Clear chat
   clearChatBtn.addEventListener('click', function () {
-    fetch('/api/chat/clear', {
+    fetch(api('/api/chat/clear'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: 'session_id=' + encodeURIComponent(sessionId),
@@ -218,6 +218,10 @@
   }
 
   // API helpers
+  function api(path) {
+    return (window.API_BASE_URL || '') + path;
+  }
+
   function sendMessage() {
     const text = messageInput.value.trim();
     if (!text || isSubmitting) return;
@@ -235,7 +239,7 @@
     formData.append('message', text);
     formData.append('session_id', sessionId);
 
-    fetch('/api/chat', {
+    fetch(api('/api/chat'), {
       method: 'POST',
       body: formData,
     })
@@ -277,7 +281,7 @@
 
     showUploadProgress(true, 'Uploading ' + file.name + '...');
 
-    fetch('/api/ingest/file', {
+    fetch(api('/api/ingest/file'), {
       method: 'POST',
       body: formData,
     })
@@ -337,7 +341,7 @@
 
     showToast('Ingesting "' + title + '"...', 'info');
 
-    fetch('/api/ingest/text', {
+    fetch(api('/api/ingest/text'), {
       method: 'POST',
       body: formData,
     })
@@ -360,7 +364,7 @@
 
   function deleteFile(filename) {
     showModal('Are you sure you want to delete "' + filename + '"?', function () {
-      fetch('/api/files/user?session_id=' + encodeURIComponent(sessionId) + '&filename=' + encodeURIComponent(filename), {
+      fetch(api('/api/files/user?session_id=' + encodeURIComponent(sessionId) + '&filename=' + encodeURIComponent(filename)), {
         method: 'DELETE',
       })
       .then(function (res) {
@@ -469,7 +473,7 @@
   }
 
   function loadDefaultFiles() {
-    fetch('/api/files/default')
+    fetch(api('/api/files/default'))
       .then(function (res) { return res.json(); })
       .then(function (data) {
         if (!data.files || data.files.length === 0) {
@@ -492,7 +496,7 @@
   }
 
   function loadUserFiles() {
-    fetch('/api/files/user?session_id=' + encodeURIComponent(sessionId))
+    fetch(api('/api/files/user?session_id=' + encodeURIComponent(sessionId)))
       .then(function (res) { return res.json(); })
       .then(function (data) {
         if (!data.files || data.files.length === 0) {
