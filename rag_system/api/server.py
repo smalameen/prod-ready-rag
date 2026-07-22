@@ -229,7 +229,9 @@ def startup():
     ensure_defaults_ingested()
     ret_en._ensure_bm25_index()
     ret_multi._ensure_bm25_index()
-    logger.info("BM25 indexes built: en=%d multi=%d", ret_en._bm25_count, ret_multi._bm25_count)
+    logger.info("BM25 indexes built: en=%s multi=%s",
+                 "disabled" if ret_en._bm25_count < 0 else str(ret_en._bm25_count),
+                 "disabled" if ret_multi._bm25_count < 0 else str(ret_multi._bm25_count))
     t = threading.Thread(target=cleanup_old_chunks, args=(vs_en, vs_multi), daemon=True)
     t.start()
     logger.info("API server started")

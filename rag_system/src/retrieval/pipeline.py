@@ -26,6 +26,7 @@ class RetrievalPipeline:
         self.top_k = config.get("retrieval", {}).get("top_k", 5)
         self.similarity_threshold = config.get("retrieval", {}).get("similarity_threshold", 0.75)
         self.reranker = Reranker()
+        self.provider = config.get("vectordb", {}).get("provider", "chromadb")
 
         self.bm25: BM25Okapi | None = None
         self.bm25_doc_ids: list[str] = []
@@ -38,6 +39,10 @@ class RetrievalPipeline:
         return re.findall(r"[\w\u0980-\u09FF]+", text.lower())
 
     def _ensure_bm25_index(self):
+        if self.provider == "supabase":
+            self.bm25 = None
+            self._bm25_count = -1
+            return
         current_count = self.vector_store.count()
         if self.bm25 is not None and current_count == self._bm25_count:
             return
@@ -143,15 +148,19 @@ class RetrievalPipeline:
         if tracker:
             tracker.record("vector_search", t2 - t1)
 
-        bm25_candidates = self._bm25_search(query, top_k=20, where=where)
-        t_bm25 = time.time()
-        if tracker:
-            tracker.record("bm25_search", t_bm25 - t2)
+        if self.provider != "supabase":
+            bm25_candidates = self._bm25_search(query, top_k=20, where=where)
+            t_bm25 = time.time()
+            if tracker:
+                tracker.record("bm25_search", t_bm25 - t2)
 
-        fused = self._rrf_fuse(candidates, bm25_candidates, top_k=self.top_k * 2)
-        t_fuse = time.time()
-        if tracker:
-            tracker.record("rrf_fuse", t_fuse - t_bm25)
+            fused = self._rrf_fuse(candidates, bm25_candidates, top_k=self.top_k * 2)
+            t_fuse = time.time()
+            if tracker:
+                tracker.record("rrf_fuse", t_fuse - t_bm25)
+        else:
+            fused = candidates
+            t_fuse = time.time()
 
         results = self.reranker.rerank(
             query=query,
