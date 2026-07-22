@@ -14,7 +14,7 @@ ollama:
 
 embedding:
   model: BAAI/bge-small-en-v1.5
-  provider: local  # "local" uses sentence-transformers, "hf" for HuggingFace API
+  provider: local  # "local" uses fastembed (ONNX), "hf" for HuggingFace API
 
 retrieval:
   top_k: 15

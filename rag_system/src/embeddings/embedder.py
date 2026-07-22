@@ -20,24 +20,24 @@ DEFAULT_HF_MODEL = "BAAI/bge-small-en-v1.5"
 
 class EmbeddingModel:
     def __init__(self, model_name: str = DEFAULT_HF_MODEL):
-        from sentence_transformers import SentenceTransformer
+        from fastembed import TextEmbedding
 
         self.model_name = model_name
-        cache_folder = str(BASE_DIR / "embeddings" / "model_cache")
         logger.info(f"Loading embedding model: {model_name}")
-        self.model = SentenceTransformer(
-            model_name,
-            cache_folder=cache_folder,
+        self.model = TextEmbedding(
+            model_name=model_name,
+            cache_dir=str(BASE_DIR / "embeddings" / "model_cache"),
+            providers=["CPUExecutionProvider"],
         )
-        self.dimension = self.model.get_embedding_dimension()
+        self.dimension = 384
         logger.info(f"Local embedding model loaded. Dimension: {self.dimension}")
 
     def embed_query(self, text: str) -> list[float]:
-        return self.model.encode(text, normalize_embeddings=True).tolist()
+        emb = next(self.model.embed(text))
+        return emb.tolist()
 
     def embed_documents(self, texts: list[str]) -> list[list[float]]:
-        embeddings = self.model.encode(texts, normalize_embeddings=True, show_progress_bar=True)
-        return [e.tolist() for e in embeddings]
+        return [e.tolist() for e in self.model.embed(texts)]
 
 
 class ApiEmbeddingModel:
