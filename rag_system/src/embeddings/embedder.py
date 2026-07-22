@@ -126,7 +126,7 @@ class HuggingFaceEmbeddingModel:
 
 def get_embedding_model(model_name: str | None = None) -> EmbeddingModel | ApiEmbeddingModel | HuggingFaceEmbeddingModel:
     cfg = load_config()
-    provider = os.getenv("EMBEDDING_PROVIDER") or cfg.get("embedding", {}).get("provider", "local")
+    provider = cfg.get("embedding", {}).get("provider", "local") or os.getenv("EMBEDDING_PROVIDER")
     key = model_name or cfg.get("embedding", {}).get("model", DEFAULT_HF_MODEL)
 
     if key not in _EMBEDDER_CACHE:
