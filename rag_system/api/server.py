@@ -319,16 +319,22 @@ def chat(message: str = Form(...), session_id: str = Form(...)):
     memory = get_or_create_memory(session_id)
     tracker = LatencyTracker(logger)
 
-    where = {
-        "$or": [
-            {"session_id": {"$eq": DEFAULT_SESSION_ID}},
-            {"session_id": {"$eq": session_id}},
-        ]
-    }
+    def _retrieve_both(pipeline, query: str, sess: str, trk):
+        default = pipeline.retrieve(query, where={"session_id": {"$eq": DEFAULT_SESSION_ID}}, tracker=trk)
+        user = pipeline.retrieve(query, where={"session_id": {"$eq": sess}}, tracker=trk)
+        combined_ids: set[str] = set()
+        combined_list: list[dict] = []
+        for c in default + user:
+            cid = c.get("id", "")
+            if cid not in combined_ids:
+                combined_ids.add(cid)
+                combined_list.append(c)
+        combined_list.sort(key=lambda x: x.get("score", 0), reverse=True)
+        return combined_list
 
     try:
-        chunks_en = ret_en.retrieve(message, where=where, tracker=tracker)
-        chunks_multi = ret_multi.retrieve(message, where=where, tracker=tracker)
+        chunks_en = _retrieve_both(ret_en, message, session_id, tracker)
+        chunks_multi = _retrieve_both(ret_multi, message, session_id, tracker)
 
         seen_ids = set()
         combined = []
@@ -370,18 +376,9 @@ def query_(message: str = Form(...), session_id: str = Form(...)):
 
     tracker = LatencyTracker(logger)
 
-    where = None
-    if session_id:
-        where = {
-            "$or": [
-                {"session_id": {"$eq": DEFAULT_SESSION_ID}},
-                {"session_id": {"$eq": session_id}},
-            ]
-        }
-
     try:
-        chunks_en = ret_en.retrieve(message, where=where, tracker=tracker)
-        chunks_multi = ret_multi.retrieve(message, where=where, tracker=tracker)
+        chunks_en = ret_en.retrieve(message, where=None, tracker=tracker) if not session_id else _retrieve_both(ret_en, message, session_id, tracker)
+        chunks_multi = ret_multi.retrieve(message, where=None, tracker=tracker) if not session_id else _retrieve_both(ret_multi, message, session_id, tracker)
         seen_ids = set()
         combined = []
         for c in chunks_en + chunks_multi:

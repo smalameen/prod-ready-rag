@@ -168,13 +168,13 @@ class SupabaseVectorStore:
         or_groups: list[str] = []
         for key, condition in where.items():
             if key == "$or":
+                parts: list[str] = []
                 for sub in condition:
-                    parts: list[str] = []
                     for k, v in sub.items():
                         if isinstance(v, dict) and "$eq" in v:
                             parts.append(f"metadata->>{k}.eq.{v['$eq']}")
-                    if parts:
-                        or_groups.append(",".join(parts))
+                if parts:
+                    or_groups.append(",".join(parts))
             elif isinstance(condition, dict):
                 col = f"metadata->>{key}"
                 if "$eq" in condition:
