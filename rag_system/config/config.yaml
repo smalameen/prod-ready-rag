@@ -14,7 +14,7 @@ ollama:
 
 embedding:
   model: BAAI/bge-small-en-v1.5
-  provider: local  # "local" for dev, "hf" for Railway deploy
+  provider: hf  # "hf" for prod, "local" for local dev (override via EMBEDDING_PROVIDER env var)
 
 retrieval:
   top_k: 15
