@@ -1,6 +1,8 @@
 import json
 import logging
 import os
+import re
+from pathlib import Path
 from typing import Any
 
 from src.loaders.base import Document
@@ -14,6 +16,9 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 
+_MIGRATION_SQL_PATH = Path(__file__).parent.parent.parent / "supabase" / "migration.sql"
+
+
 class SupabaseVectorStore:
     def __init__(self, collection_name: str = "user_docs_en"):
         self.collection_name = collection_name
@@ -22,7 +27,54 @@ class SupabaseVectorStore:
         self._sb = create_client(supabase_url, supabase_key)
         self._dimension = 384
         self._table = "documents"
+        self._ensure_migration(supabase_url, supabase_key)
         logger.info(f"SupabaseVectorStore initialized: {self._table}")
+
+    def _ensure_migration(self, supabase_url: str, supabase_key: str):
+        if not _MIGRATION_SQL_PATH.exists():
+            logger.warning(f"Migration SQL not found at {_MIGRATION_SQL_PATH}")
+            return
+        try:
+            self._sb.rpc("match_documents", {
+                "query_embedding": [0.0] * self._dimension,
+                "match_threshold": 0.0,
+                "match_count": 1,
+                "filter_where": None,
+            }).execute()
+            logger.info("match_documents function already exists")
+            return
+        except Exception:
+            logger.info("match_documents function not found, running migration...")
+        try:
+            import psycopg2
+            db_password = os.environ.get("SUPABASE_DB_PASSWORD")
+            if not db_password:
+                logger.warning("SUPABASE_DB_PASSWORD not set, skipping auto-migration. "
+                               "Run rag_system/supabase/migration.sql manually in Supabase SQL Editor.")
+                return
+            m = re.match(r"https://([^.]+)\.supabase\.co", supabase_url)
+            if not m:
+                logger.warning("Could not parse project ref from SUPABASE_URL")
+                return
+            project_ref = m.group(1)
+            conn = psycopg2.connect(
+                host=f"db.{project_ref}.supabase.co",
+                port=5432,
+                user="postgres",
+                password=db_password,
+                dbname="postgres",
+                connect_timeout=10,
+                sslmode="require",
+            )
+            conn.autocommit = True
+            sql = _MIGRATION_SQL_PATH.read_text(encoding="utf-8")
+            with conn.cursor() as cur:
+                cur.execute(sql)
+            conn.close()
+            logger.info("Migration completed successfully")
+        except Exception as e:
+            logger.warning(f"Auto-migration failed: {e}. "
+                           f"Run rag_system/supabase/migration.sql manually in Supabase SQL Editor.")
 
     @property
     def collection(self):
