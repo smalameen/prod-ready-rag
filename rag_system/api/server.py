@@ -491,6 +491,20 @@ if STATIC_DIR.exists():
     async def serve_index():
         return FileResponse(str(STATIC_DIR / "index.html"))
 
+    @app.get("/api/debug/vector")
+    async def debug_vector():
+        results = []
+        for vs_name, vs in [("en", vs_en), ("multi", vs_multi)]:
+            total = vs.count()
+            sample = vs.collection.get(include=["metadatas"], limit=2)
+            results.append({
+                "store": vs_name,
+                "total_docs": total,
+                "sample_ids": sample.get("ids", []) if sample else [],
+                "sample_metadata": sample.get("metadatas", []) if sample else [],
+            })
+        return {"stores": results}
+
     @app.exception_handler(404)
     async def not_found_handler(request, exc):
         path = request.url.path

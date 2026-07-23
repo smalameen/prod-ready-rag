@@ -1,11 +1,8 @@
 {
   "version": 2,
   "outputDirectory": ".",
+  "buildCommand": "sed -i \"s|__RAILWAY_API_URL__|${RAILWAY_API_URL}|g\" index.html",
   "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "https://prod-ready-rag-production.up.railway.app/api/$1"
-    },
     {
       "src": "/static/(.*)",
       "dest": "/$1"

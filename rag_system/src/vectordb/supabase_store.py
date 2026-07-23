@@ -135,7 +135,7 @@ class SupabaseVectorStore:
     ) -> list[dict[str, Any]]:
         filter_where = where or metadata_filter
         if filter_where is None:
-            filter_json = None
+            filter_param = None
         elif "$or" in filter_where:
             all_hits: dict[str, dict[str, Any]] = {}
             for sub in filter_where["$or"]:
@@ -146,7 +146,7 @@ class SupabaseVectorStore:
                         "query_embedding": query_embedding,
                         "match_threshold": similarity_threshold,
                         "match_count": top_k,
-                        "filter_where": json.dumps(flat) if flat else None,
+                        "filter_where": flat if flat else None,
                     },
                 ).execute()
                 for row in resp.data or []:
@@ -161,7 +161,7 @@ class SupabaseVectorStore:
             hits = sorted(all_hits.values(), key=lambda x: x["score"], reverse=True)[:top_k]
             return hits
         else:
-            filter_json = json.dumps(self._flatten_filter(filter_where))
+            filter_param = self._flatten_filter(filter_where)
 
         resp = self._sb.rpc(
             "match_documents",
@@ -169,7 +169,7 @@ class SupabaseVectorStore:
                 "query_embedding": query_embedding,
                 "match_threshold": similarity_threshold,
                 "match_count": top_k,
-                "filter_where": filter_json,
+                "filter_where": filter_param,
             },
         ).execute()
 
