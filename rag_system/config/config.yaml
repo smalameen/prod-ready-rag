@@ -14,7 +14,7 @@ ollama:
 
 embedding:
   model: BAAI/bge-small-en-v1.5
-  provider: hf  # "local" for dev (fastembed/ONNX), "hf" for Railway
+  provider: local  # "local" uses fastembed (ONNX), "hf" for HuggingFace API if DNS resolves
 
 retrieval:
   top_k: 15

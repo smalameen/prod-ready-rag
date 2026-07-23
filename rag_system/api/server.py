@@ -217,8 +217,8 @@ def cleanup_old_chunks(vs_en_: VectorStore, vs_multi_: VectorStore, interval_sec
                         except ValueError:
                             to_delete.append(results["ids"][i])
                 if to_delete:
-                    vs.collection.delete(ids=to_delete)
-                    logger.info(f"TTL cleanup: deleted {len(to_delete)} chunks from {vs.collection.name}")
+                    vs.delete_documents(to_delete)
+                    logger.info(f"TTL cleanup: deleted {len(to_delete)} chunks")
         except Exception as e:
             logger.error(f"TTL cleanup error: {e}")
         time.sleep(interval_seconds)
